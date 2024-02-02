@@ -38,30 +38,30 @@ pub fn gen_merkle_proof(leaves: Vec<String>, leaf_pos: usize) -> Vec<Hash32Bytes
     let mut level_pos = leaf_pos;
     for level in 0..height {
         //FILL ME IN
-        let sibling_pos = level_pos ^ 1; // XOR is used to toggle the lowest bit
+        let mut next_level_hashes = Vec::new();
 
-hashes.push(state[sibling_pos].clone());
-
-let mut next_state: Vec<Hash32Bytes> = Vec::new();
-
-for i in (0..state.len()).step_by(2) {
-    let left_child = &state[i];
-    let right_child = if i + 1 < state.len() {
-        &state[i + 1]
-    } else {
-        left_child
-    };
-
-    next_state.push(hash_internal(left_child, right_child));
-}
-
-state = next_state;
-level_pos >>= 1; // Right shift to divide by 2
-
-    
-
-
-    
+        // Calculate parent hashes for the next level
+        for i in (0..state.len()).step_by(2) {
+            let left = state[i];
+            let right = state.get(i + 1).cloned().unwrap_or_default();
+            let combined = hash_internal(left, right);
+            next_level_hashes.push(combined);
+        }
+        
+        // Determine the sibling position
+        let sibling_pos = if level_pos % 2 == 0 {
+            level_pos + 1
+        } else {
+            level_pos - 1
+        };
+        
+        // Add the sibling to the proof
+        hashes.push(state[sibling_pos]);
+        
+        // Update state and move to the parent’s position
+        state = next_level_hashes;
+        level_pos >>= 1;
+        
 
 // The 'hashes' vector now contains the Merkle proof for the specified level_pos
 
