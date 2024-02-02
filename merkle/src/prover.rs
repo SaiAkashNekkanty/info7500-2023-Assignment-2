@@ -38,6 +38,33 @@ pub fn gen_merkle_proof(leaves: Vec<String>, leaf_pos: usize) -> Vec<Hash32Bytes
     let mut level_pos = leaf_pos;
     for level in 0..height {
         //FILL ME IN
+        let sibling_pos = level_pos ^ 1; // XOR is used to toggle the lowest bit
+
+hashes.push(state[sibling_pos].clone());
+
+let mut next_state: Vec<Hash32Bytes> = Vec::new();
+
+for i in (0..state.len()).step_by(2) {
+    let left_child = &state[i];
+    let right_child = if i + 1 < state.len() {
+        &state[i + 1]
+    } else {
+        left_child
+    };
+
+    next_state.push(hash_internal(left_child, right_child));
+}
+
+state = next_state;
+level_pos >>= 1; // Right shift to divide by 2
+
+    
+
+
+    
+
+// The 'hashes' vector now contains the Merkle proof for the specified level_pos
+
     }
 
     // Returns list of hashes that make up the Merkle Proof
